@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"time"
 
 	cid "gx/ipfs/QmNp85zy9RLrQ5oQD4hPyS39ezrrXpcaa7R4Y9kxdWQLLQ/go-cid"
 	ipld "gx/ipfs/QmPN7cwmpcc4DWXb4KTB9dNAJgjuPY69h3npsMfhRrQL9c/go-ipld-format"
@@ -21,6 +22,11 @@ type Path interface {
 type Node ipld.Node
 type Link ipld.Link
 
+type IpnsEntry struct {
+	Name  string
+	Value Path
+}
+
 type Reader interface {
 	io.ReadSeeker
 	io.Closer
@@ -28,6 +34,8 @@ type Reader interface {
 
 type CoreAPI interface {
 	Unixfs() UnixfsAPI
+	Name() NameAPI
+
 	ResolvePath(context.Context, Path) (Path, error)
 	ResolveNode(context.Context, Path) (Node, error)
 }
@@ -36,6 +44,18 @@ type UnixfsAPI interface {
 	Add(context.Context, io.Reader) (Path, error)
 	Cat(context.Context, Path) (Reader, error)
 	Ls(context.Context, Path) ([]*Link, error)
+}
+
+type NameAPI interface {
+	Publish(ctx context.Context, path Path, validTime time.Duration, key string) (*IpnsEntry, error)
+	Resolve(ctx context.Context, name string, recursive bool, local bool, nocache bool) (Path, error)
+}
+
+type KeyApi interface {
+	Generate(ctx context.Context, name string, algorithm string, size int) error
+	List(ctx context.Context) (map[string]string, error) //TODO: better key type?
+	Rename(ctx context.Context, oldName string, newName string) error
+	Remove(ctx context.Context, name string) error
 }
 
 // type ObjectAPI interface {
