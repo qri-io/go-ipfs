@@ -35,6 +35,7 @@ type Reader interface {
 type CoreAPI interface {
 	Unixfs() UnixfsAPI
 	Name() NameAPI
+	Key() KeyAPI
 
 	ResolvePath(context.Context, Path) (Path, error)
 	ResolveNode(context.Context, Path) (Node, error)
@@ -51,11 +52,11 @@ type NameAPI interface {
 	Resolve(ctx context.Context, name string, recursive bool, local bool, nocache bool) (Path, error)
 }
 
-type KeyApi interface {
-	Generate(ctx context.Context, name string, algorithm string, size int) error
+type KeyAPI interface {
+	Generate(ctx context.Context, name string, algorithm string, size int) (string, error)
 	List(ctx context.Context) (map[string]string, error) //TODO: better key type?
-	Rename(ctx context.Context, oldName string, newName string) error
-	Remove(ctx context.Context, name string) error
+	Rename(ctx context.Context, oldName string, newName string, force bool) (string, bool, error)
+	Remove(ctx context.Context, name string) (string, error)
 }
 
 // type ObjectAPI interface {
